@@ -157,6 +157,7 @@ class DripsTestCase(TestCase):
             name='A Custom Week Ago',
             subject_template='HELLO {{ user.username }}',
             body_html_template='KETTEHS ROCK!',
+            sms_text='KETTEHS ROCK!',
         )
         QuerySetRule.objects.create(
             drip=model_drip,
@@ -504,5 +505,5 @@ class UrlsTestCase(TestCase):
 
         self.assertEqual(
             view_drip_email_url,
-            '/admin/drip/drip/1/timeline/2/3/4/',
+            '/admin/drip/drip/1/timeline/2/3/4/email-view',
         )
