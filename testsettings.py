@@ -8,6 +8,11 @@ the post_drip signal.
 """
 DRIP_CAMPAIGN_DRYRUN = False
 
+"""
+To Add permission to some admins to control the drips and not all admins
+"""
+ENABLE_QUERY_SET_RULE_PERMISSION = False
+
 SECRET_KEY = 'whatever/you/want-goes-here'
 
 DATABASES = {

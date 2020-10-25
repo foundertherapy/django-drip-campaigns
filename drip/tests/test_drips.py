@@ -491,7 +491,10 @@ class UrlsTestCase(TestCase):
             }
         )
 
-        self.assertEqual(timeline_url, '/admin/drip/drip/1/timeline/2/3/')
+        self.assertEqual(
+            timeline_url,
+            '/admin/drip/drip/1/timeline/2/3/'
+        )
 
     def test_view_drip_email_url_url(self):
         view_drip_email_url = reverse(

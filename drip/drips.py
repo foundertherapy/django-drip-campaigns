@@ -252,6 +252,9 @@ class DripBase(object):
             qs = qs.exclude(functools.reduce(operator.or_, clauses['exclude']))
         qs = qs.filter(*clauses['filter'])
 
+        if self.drip_model.queryset_rules.count() == 0:
+            qs = qs.none()
+
         return qs
 
     ##################
