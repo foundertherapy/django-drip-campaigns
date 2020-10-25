@@ -5,10 +5,13 @@ from django.contrib import admin
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.urls import path
+from django.conf import settings
 
 from drip.models import Drip, SentDrip, QuerySetRule
 from drip.drips import configured_message_classes, message_class_for
 from drip.utils import get_user_model, get_simple_fields
+
+CAN_ADD_DRIP = 'can_edit_drip_queryset'
 
 
 class QuerySetRuleInline(admin.TabularInline):
@@ -35,6 +38,15 @@ class DripAdmin(admin.ModelAdmin):
     ]
     form = DripForm
     users_fields = []
+
+    def get_model_perms(self, request):
+        if not settings.ENABLE_QUERY_SET_RULE_PERMISSION:
+            return super(DripAdmin, self).get_model_perms(request)
+
+        if request.user.groups.filter(name='Drip Admin').exists():
+            return super(DripAdmin, self).get_model_perms(request)
+        else:
+            return {}
 
     def av(self, view):
         return self.admin_site.admin_view(view)
