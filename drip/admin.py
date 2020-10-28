@@ -39,6 +39,13 @@ class DripAdmin(admin.ModelAdmin):
     form = DripForm
     users_fields = []
 
+    def get_exclude(self, request, obj=None):
+        languages = [val for val, label in settings.LANGUAGES]
+        return [
+            field.name for field in Drip._meta.fields
+            if any(field.name.endswith('_' + lang) for lang in languages)
+        ]
+
     def get_model_perms(self, request):
         if not settings.ENABLE_QUERY_SET_RULE_PERMISSION:
             return super(DripAdmin, self).get_model_perms(request)
