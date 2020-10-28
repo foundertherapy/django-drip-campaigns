@@ -60,6 +60,9 @@ class DripMessage(object):
         self._plain = None
         self._message = None
 
+    def fill_text_with_context_data(self, text):
+        return Template(text).render(self.context)
+
     @property
     def from_email(self):
         return self.drip_base.from_email
@@ -77,33 +80,33 @@ class DripMessage(object):
     @property
     def subject(self):
         if not self._subject:
-            self._subject = Template(
-                self.drip_base.subject_template,
-            ).render(self.context)
+            self._subject = self.fill_text_with_context_data(
+                self.drip_base.subject_template
+            )
         return self._subject
 
     @property
     def pre_header(self):
         if not self._pre_header:
-            self._pre_header = str(Template(
-                self.drip_base.pre_header_text,
-            ).render(self.context))
+            self._pre_header = self.fill_text_with_context_data(
+                self.drip_base.pre_header_text
+            )
         return self._pre_header
 
     @property
     def body(self):
         if not self._body:
-            self._body = Template(
-                self.drip_base.body_template,
-            ).render(self.context)
+            self._body = self.fill_text_with_context_data(
+                self.drip_base.body_template
+            )
         return self._body
 
     @property
     def sms(self):
         if not self._sms:
-            self._sms = str(Template(
-                self.drip_base.sms_text,
-            ).render(self.context))
+            self._sms = self.fill_text_with_context_data(
+                self.drip_base.sms_text
+            )
         return self._sms
 
     @property
