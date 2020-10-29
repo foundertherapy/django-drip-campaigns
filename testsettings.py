@@ -13,6 +13,8 @@ To Add permission to some admins to control the drips and not all admins
 """
 ENABLE_QUERY_SET_RULE_PERMISSION = False
 
+DRIP_ADMIN_HELP_TEXT = ''
+
 SECRET_KEY = 'whatever/you/want-goes-here'
 
 DATABASES = {

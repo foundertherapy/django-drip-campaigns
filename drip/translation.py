@@ -10,4 +10,3 @@ class DripTranslationOptions(TranslationOptions):
         'body_html_template',
         'sms_text'
     )
-
