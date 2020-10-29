@@ -80,6 +80,13 @@ class Drip(models.Model):
         return self.name
 
 
+class LimitedAccessDrip(Drip):
+    class Meta:
+        proxy = True
+        verbose_name = 'Drip'
+        verbose_name_plural = 'Drips'
+
+
 class SentDrip(models.Model):
     """
     Keeps a record of all sent drips.
