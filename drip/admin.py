@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.urls import path
 from django.conf import settings
 
-from drip.models import Drip, SentDrip, QuerySetRule
+from drip.models import Drip, SentDrip, QuerySetRule, LimitedAccessDrip
 from drip.drips import configured_message_classes, message_class_for
 from drip.utils import get_user_model, get_simple_fields
 
@@ -38,11 +38,21 @@ class DripAdmin(admin.ModelAdmin):
     ]
     form = DripForm
     users_fields = []
+    actions = [
+        'action_enable_drips',
+        'action_disable_drips',
+        'action_duplicate_drips',
+    ]
 
+    """
+    Go though all translated fields and exclude their original field from
+    the admin view so user can only change the translation fields
+    to avoid confusion
+    """
     def get_exclude(self, request, obj=None):
         languages = [val for val, label in settings.LANGUAGES]
         return [
-            field.name for field in Drip._meta.fields
+            field.name[:field.name.rfind('_')] for field in Drip._meta.fields
             if any(field.name.endswith('_' + lang) for lang in languages)
         ]
 
@@ -54,6 +64,26 @@ class DripAdmin(admin.ModelAdmin):
             return super(DripAdmin, self).get_model_perms(request)
         else:
             return {}
+
+    def action_enable_drips(self, request, queryset):
+        queryset.update(enabled=True)
+    action_enable_drips.short_description = 'Enable selected drips'
+
+    def action_disable_drips(self, request, queryset):
+        queryset.update(enabled=False)
+    action_disable_drips.short_description = 'Disable selected drips'
+
+    def action_duplicate_drips(self, request, queryset):
+        for drip in queryset.all():
+            query_rules = drip.queryset_rules.all()
+            drip.id = None
+            drip.name = drip.name + ' - duplicated'
+            drip.save()
+            for rule in query_rules:
+                rule.id = None
+                rule.drip = drip
+                rule.save()
+    action_duplicate_drips.short_description = 'Duplicate selected drips'
 
     def av(self, view):
         return self.admin_site.admin_view(view)
@@ -180,6 +210,35 @@ class DripAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Drip, DripAdmin)
+
+
+class LimitedAccessDripAdmin(DripAdmin):
+    def get_model_perms(self, request):
+        if not settings.ENABLE_QUERY_SET_RULE_PERMISSION:
+            return {}
+        if request.user.groups.filter(name='Drip Admin').exists():
+            return {}
+        else:
+            return super(DripAdmin, self).get_model_perms(request)
+
+    change_form_template = 'admin/drip/change_form.html'
+    inlines = []
+    readonly_fields = ['is_queryset_added', 'message_class']
+
+    def get_exclude(self, request, obj=None):
+        excludes = super().get_exclude(request, obj)
+        return excludes + ['from_email', 'from_email_name', ]
+
+    def get_urls(self):
+        return super(DripAdmin, self).get_urls()
+
+    def is_queryset_added(self, obj):
+        return obj.queryset_rules.count() > 0
+    is_queryset_added.short_description = 'Are users conditions added'
+    is_queryset_added.boolean = True
+
+
+admin.site.register(LimitedAccessDrip, LimitedAccessDripAdmin)
 
 
 class SentDripAdmin(admin.ModelAdmin):
