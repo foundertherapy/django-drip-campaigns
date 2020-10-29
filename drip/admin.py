@@ -38,6 +38,10 @@ class DripAdmin(admin.ModelAdmin):
     ]
     form = DripForm
     users_fields = []
+    actions = [
+        'action_enable_drips',
+        'action_disable_drips',
+    ]
 
     def get_exclude(self, request, obj=None):
         languages = [val for val, label in settings.LANGUAGES]
@@ -54,6 +58,19 @@ class DripAdmin(admin.ModelAdmin):
             return super(DripAdmin, self).get_model_perms(request)
         else:
             return {}
+
+    def action_enable_drips(self, request, queryset):
+        queryset.update(enabled=True)
+    action_enable_drips.short_description = 'Enable selected drips'
+
+    def action_disable_drips(self, request, queryset):
+        queryset.update(enabled=False)
+    action_disable_drips.short_description = 'Disable selected drips'
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        fieldsets[0][1]['description'] = settings.DRIP_ADMIN_HELP_TEXT
+        return fieldsets
 
     def av(self, view):
         return self.admin_site.admin_view(view)
