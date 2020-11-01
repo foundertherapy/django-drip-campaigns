@@ -112,7 +112,8 @@ class DripMessage(object):
     @property
     def plain(self):
         if not self._plain:
-            self._plain = strip_tags(self.body)
+            self._plain = self.pre_header + ' ' + strip_tags(self.body) \
+                if self.pre_header else strip_tags(self.body)
         return self._plain
 
     def get_from_(self):
@@ -138,13 +139,7 @@ class DripMessage(object):
 
             # check if there are html tags in the rendered template
             if len(self.plain) != len(self.body):
-                message_body = self.body.replace(
-                    '<body>',
-                    '<body><span style="display:none;">{}</span>'.format(
-                        self.pre_header
-                    )
-                ) if self.pre_header else self.plain
-                self._message.attach_alternative(message_body, 'text/html')
+                self._message.attach_alternative(self.body, 'text/html')
         return self._message
 
 
