@@ -41,8 +41,14 @@ class DripAdmin(admin.ModelAdmin):
     actions = [
         'action_enable_drips',
         'action_disable_drips',
+        'action_duplicate_drips',
     ]
 
+    """
+    Go though all translated fields and exclude their original field from
+    the admin view so user can only change the translation fields
+    to avoid confusion
+    """
     def get_exclude(self, request, obj=None):
         languages = [val for val, label in settings.LANGUAGES]
         return [
@@ -66,6 +72,18 @@ class DripAdmin(admin.ModelAdmin):
     def action_disable_drips(self, request, queryset):
         queryset.update(enabled=False)
     action_disable_drips.short_description = 'Disable selected drips'
+
+    def action_duplicate_drips(self, request, queryset):
+        for drip in queryset.all():
+            query_rules = drip.queryset_rules.all()
+            drip.id = None
+            drip.name = drip.name + ' - duplicated'
+            drip.save()
+            for rule in query_rules:
+                rule.id = None
+                rule.drip = drip
+                rule.save()
+    action_duplicate_drips.short_description = 'Duplicate selected drips'
 
     def av(self, view):
         return self.admin_site.admin_view(view)
