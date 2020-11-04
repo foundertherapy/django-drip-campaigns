@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_modify %}
+{% load admin_urls %}
+
+{% block title %}Viewing Recipents for {{ drip.name }}{% endblock title %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=drip_options.app_label %}">{{ drip_options.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url drip_options|admin_urlname:'changelist' %}">Drip</a>
+&rsaquo; <a href="{% url drip_options|admin_urlname:'change' drip_object.pk|admin_urlquote %}">{{ drip_object|truncatewords:"18" }}</a>
+&rsaquo; {% trans 'Today Recipients' %}
+</div>
+{% endblock %}
+
+{% block content %}
+  <h1>{{ drip.name }} Today Recipients:</h1>
+
+  <div class="content-main">
+      <ul>
+          {% for user in users %}
+            {% if user.email %}
+                <li>{{ user.email }} - {{ user.id }} - <a href="{% url 'admin:view_drip_email' drip_id 4 7 user.id %}">view email</a> | <a href="{% url 'admin:view_drip_sms' drip_id 4 7 user.id %}">view sms</a></li>
+            {% endif %}
+          {% endfor %}
+      </ul>
+  </div>
+{% endblock content %}

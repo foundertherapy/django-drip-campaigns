@@ -112,8 +112,17 @@ class DripAdmin(admin.ModelAdmin):
             seen_users.update(
                 shifted_drip.get_queryset().values_list('id', flat=True)
             )
-
+        drip_options = drip._meta
+        drip_object = drip
         return render(request, 'drip/timeline.html', locals())
+
+    def recipients(self, request, drip_id):
+        drip = get_object_or_404(Drip, id=drip_id).drip
+        drip.prune()
+        users = drip.get_queryset()
+        drip_options = drip.drip_model._meta
+        drip_object = drip.drip_model
+        return render(request, 'drip/recipents.html', locals())
 
     def get_mime_html_from_alternatives(self, alternatives):
         html = ''
@@ -204,6 +213,11 @@ class DripAdmin(admin.ModelAdmin):
                 '<int:into_future>/<int:user_id>/sms-view',
                 self.av(self.view_drip_sms),
                 name='view_drip_sms'
+            ),
+            path(
+                '<int:drip_id>/recpients',
+                self.av(self.recipients),
+                name='drip_recipients'
             )
         ]
         return my_urls + urls

@@ -4,7 +4,15 @@
 
 {% block title %}Viewing Timeline for {{ drip.name }}{% endblock title %}
 
-{% block breadcrumbs %}{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=drip_options.app_label %}">{{ drip_options.app_config.verbose_name }}</a>
+&rsaquo; <a href="{% url drip_options|admin_urlname:'changelist' %}">Drip</a>
+&rsaquo; <a href="{% url drip_options|admin_urlname:'change' drip_object.pk|admin_urlquote %}">{{ drip_object|truncatewords:"18" }}</a>
+&rsaquo; {% trans 'Timeline' %}
+</div>
+{% endblock %}
 
 {% block content %}
   <h1>{{ drip.name }} Schedule:</h1>
