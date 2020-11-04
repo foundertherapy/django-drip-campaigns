@@ -1,4 +1,5 @@
 import json
+import pytz
 
 from django import forms
 from django.contrib import admin
@@ -6,6 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.urls import path
 from django.conf import settings
+from django.utils import timezone
 
 from drip.models import Drip, SentDrip, QuerySetRule, LimitedAccessDrip
 from drip.drips import configured_message_classes, message_class_for
@@ -92,7 +94,7 @@ class DripAdmin(admin.ModelAdmin):
         """
         Return a list of people who should get emails.
         """
-
+        timezone.activate(pytz.UTC)
         drip = get_object_or_404(Drip, id=drip_id)
 
         shifted_drips = []
@@ -112,8 +114,20 @@ class DripAdmin(admin.ModelAdmin):
             seen_users.update(
                 shifted_drip.get_queryset().values_list('id', flat=True)
             )
-
+        drip_options = drip._meta
+        drip_object = drip
+        timezone.deactivate()
         return render(request, 'drip/timeline.html', locals())
+
+    def recipients(self, request, drip_id):
+        timezone.activate(pytz.UTC)
+        drip = get_object_or_404(Drip, id=drip_id).drip
+        drip.prune()
+        users = drip.get_queryset()
+        drip_options = drip.drip_model._meta
+        drip_object = drip.drip_model
+        timezone.deactivate()
+        return render(request, 'drip/recipents.html', locals())
 
     def get_mime_html_from_alternatives(self, alternatives):
         html = ''
@@ -204,6 +218,11 @@ class DripAdmin(admin.ModelAdmin):
                 '<int:into_future>/<int:user_id>/sms-view',
                 self.av(self.view_drip_sms),
                 name='view_drip_sms'
+            ),
+            path(
+                '<int:drip_id>/recpients',
+                self.av(self.recipients),
+                name='drip_recipients'
             )
         ]
         return my_urls + urls
